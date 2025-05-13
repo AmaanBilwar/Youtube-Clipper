@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { YouTubePlayer } from "@/components/youtube-player";
+import { Navigation } from "@/components/navigation";
+import { QuoteFinder } from "@/components/quote-finder";
 
-export default function App() {
+function YouTubeClipper() {
   const [url, setUrl] = useState("");
   const [startTime, setStartTime] = useState("00:00:00");
   const [endTime, setEndTime] = useState("00:00:00");
@@ -130,83 +132,104 @@ export default function App() {
   const videoId = getVideoId(url);
 
   return (
-    <main className="flex flex-col mx-auto max-w-lg w-full justify-center h-full items-center min-h-screen">
-      <section className="flex flex-col w-full gap-12 border-2 border-border/50 p-4 md:p-6 bg-muted/30 rounded-3xl">
-        <h1 className="text-2xl font-bold tracking-tight">Video Clipper</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="url">YouTube URL</Label>
-            <Input
-              type="text"
-              id="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="startTime">Start Time (HH:MM:SS)</Label>
-            <Input
-              type="text"
-              id="startTime"
-              value={startTime}
-              onChange={(e) => handleTimeChange(e.target.value, setStartTime)}
-              placeholder="00:00:00"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="endTime">End Time (HH:MM:SS)</Label>
-            <Input
-              type="text"
-              id="endTime"
-              value={endTime}
-              onChange={(e) => handleTimeChange(e.target.value, setEndTime)}
-              placeholder="00:00:00"
-              required
-            />
-          </div>
-          <div className="flex gap-4">
-            <Button 
-              type="button" 
-              onClick={handlePreview} 
-              className="flex-1" 
-              size="lg"
-              disabled={!videoId}
-            >
-              Preview Clip
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={loading} 
-              className="flex-1" 
-              size="lg"
-            >
-              {loading ? "Processing..." : "Download Clip"}
-            </Button>
-          </div>
-          {error && (
-            <div className="text-destructive text-sm mt-2">{error}</div>
-          )}
-          {clipPath && (
-            <div className="text-green-500 text-sm mt-2">
-              Clip created successfully! Server path: {clipPath}
-            </div>
-          )}
-        </form>
-
-        {/* Video Preview */}
-        {videoId && showPreview && (
-          <div className="mt-8">
-            <h2 className="text-lg font-semibold mb-4">Preview</h2>
-            <YouTubePlayer
-              videoId={videoId}
-              startTime={formatTimeInput(startTime)}
-              endTime={formatTimeInput(endTime)}
-            />
+    <section className="flex flex-col w-full gap-12 border-2 border-border/50 p-4 md:p-6 bg-muted/30 rounded-3xl">
+      <h1 className="text-2xl font-bold tracking-tight">YouTube Clipper</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="url">YouTube URL</Label>
+          <Input
+            type="text"
+            id="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="startTime">Start Time (HH:MM:SS)</Label>
+          <Input
+            type="text"
+            id="startTime"
+            value={startTime}
+            onChange={(e) => handleTimeChange(e.target.value, setStartTime)}
+            placeholder="00:00:00"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="endTime">End Time (HH:MM:SS)</Label>
+          <Input
+            type="text"
+            id="endTime"
+            value={endTime}
+            onChange={(e) => handleTimeChange(e.target.value, setEndTime)}
+            placeholder="00:00:00"
+            required
+          />
+        </div>
+        <div className="flex gap-4">
+          <Button 
+            type="button" 
+            onClick={handlePreview} 
+            className="flex-1" 
+            size="lg"
+            disabled={!videoId}
+          >
+            Preview Clip
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={loading} 
+            className="flex-1" 
+            size="lg"
+          >
+            {loading ? "Processing..." : "Download Clip"}
+          </Button>
+        </div>
+        {error && (
+          <div className="text-destructive text-sm mt-2">{error}</div>
+        )}
+        {clipPath && (
+          <div className="text-green-500 text-sm mt-2">
+            Clip created successfully! Server path: {clipPath}
           </div>
         )}
-      </section>
+      </form>
+
+      {/* Video Preview */}
+      {videoId && showPreview && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-4">Preview</h2>
+          <YouTubePlayer
+            videoId={videoId}
+            startTime={formatTimeInput(startTime)}
+            endTime={formatTimeInput(endTime)}
+          />
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default function App() {
+  const tabs = [
+    {
+      id: "clipper",
+      label: "YouTube Clipper",
+      content: <YouTubeClipper />
+    },
+    {
+      id: "quote-finder",
+      label: "Quote Finder",
+      content: <QuoteFinder />
+    }
+  ];
+
+  return (
+    <main className="flex flex-col mx-auto max-w-lg w-full justify-center h-full items-center min-h-screen">
+      <Navigation tabs={tabs} />
     </main>
   );
 }
+
+
