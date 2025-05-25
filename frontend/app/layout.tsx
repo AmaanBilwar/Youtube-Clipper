@@ -8,8 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Video Clipper",
-  description: "Extract perfect clips from your desired video",
+  title: "Youtube Helper",
 };
 
 export default function RootLayout({

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { YouTubePlayer } from "@/components/youtube-player";
 import { Navigation } from "@/components/navigation";
 import { QuoteFinder } from "@/components/quote-finder";
+import { ThumbnailGrabber } from "@/components/thumbnail-grabber";
 
 function YouTubeClipper() {
   const [url, setUrl] = useState("");
@@ -225,15 +226,20 @@ export default function App() {
       id: "quote-finder",
       label: "Quote Finder",
       content: <QuoteFinder />
+    },
+    {
+      id: "thumbnail-grabber",
+      label: "Thumbnail Grabber",
+      content: <ThumbnailGrabber />
     }
   ];
 
   return (
     <main className="flex flex-col mx-auto max-w-lg w-full justify-center pt-12 h-full items-center min-h-screen">
-      <h1 className="text-2xl font-bold tracking-tight">Amaan's Youtube Helper</h1>
-    <div className="flex flex-col mx-auto max-w-lg w-full justify-center h-full items-center min-h-screen">
-      <Navigation tabs={tabs} />
-    </div>
+      <h1 className="text-2xl font-bold mb-8">Amaan's Youtube Helper</h1>
+      <div className="flex flex-col w-full">
+        <Navigation tabs={tabs} />
+      </div>
     </main>
   );
 }
