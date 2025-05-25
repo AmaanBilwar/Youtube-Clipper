@@ -1,10 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { YouTubePlayer } from "@/components/youtube-player";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import Fuse from 'fuse.js';
+import type { FuseResult } from 'fuse.js';
+
+interface TranscriptEvent {
+  text: string;
+  start: number;
+  end: number;
+}
 
 export function QuoteFinder() {
   const [url, setUrl] = useState("");
@@ -13,6 +31,10 @@ export function QuoteFinder() {
   const [error, setError] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [transcript, setTranscript] = useState<TranscriptEvent[]>([]);
+  const [searchResults, setSearchResults] = useState<TranscriptEvent[]>([]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [showTranscriptAlert, setShowTranscriptAlert] = useState(false);
 
   // Extract video ID from YouTube URL
   const getVideoId = (url: string) => {
@@ -25,29 +47,93 @@ export function QuoteFinder() {
     setShowPreview(true);
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Fetch transcript when URL changes
+  useEffect(() => {
+    const videoId = getVideoId(url);
+    if (videoId) {
+      fetchTranscript(url);
+    }
+  }, [url]);
+
+  const fetchTranscript = async (videoUrl: string) => {
     setLoading(true);
     setError("");
-
     try {
-      // TODO: Implement quote search functionality
-      // This would involve calling your backend API to search for quotes
+      const response = await fetch('http://localhost:3001/api/transcript', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: videoUrl }),
+      });
 
+      if (!response.ok) {
+        throw new Error('Failed to fetch transcript');
+      }
 
-      console.log("Searching for quotes:", searchQuery);
+      const data = await response.json();
+      if (!data.transcript || data.transcript.length === 0) {
+        setShowTranscriptAlert(true);
+        return;
+      }
+      setTranscript(data.transcript);
     } catch (err) {
-      console.error("Error in handleSearch:", err);
+      console.error("Error fetching transcript:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
+      setShowTranscriptAlert(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const fuse = new Fuse(transcript, {
+      keys: ['text'],
+      threshold: 0.3,
+      includeScore: true
+    });
+
+    const results = fuse.search(searchQuery);
+    setSearchResults(results.map((result: FuseResult<TranscriptEvent>) => result.item));
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleTimestampClick = (startTime: number) => {
+    setCurrentTime(startTime);
   };
 
   const videoId = getVideoId(url);
 
   return (
     <section className="flex flex-col w-full gap-12 border-2 border-border/50 p-4 md:p-6 bg-muted/30 rounded-3xl">
+      <AlertDialog open={showTranscriptAlert} onOpenChange={setShowTranscriptAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Transcript Not Available</AlertDialogTitle>
+            <AlertDialogDescription>
+              We couldn't find a transcript for this video. To access our advanced capabilities and automatic transcript generation, please subscribe to our pro version.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogAction onClick={() => window.open('/pricing', '_blank')}>
+              View Pro Plans
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <h1 className="text-2xl font-bold tracking-tight">Quote Finder</h1>
       <form onSubmit={handleSearch} className="flex flex-col gap-4">
         <div className="space-y-2">
@@ -95,13 +181,34 @@ export function QuoteFinder() {
         )}
       </form>
 
+      {/* Search Results */}
+      {searchResults.length > 0 && (
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold mb-2">Search Results</h2>
+          <div className="space-y-2">
+            {searchResults.map((result, index) => (
+              <div 
+                key={index} 
+                className="p-2 bg-background rounded-lg cursor-pointer hover:bg-muted"
+                onClick={() => handleTimestampClick(result.start)}
+              >
+                <div className="text-sm text-muted-foreground">
+                  {formatTime(result.start)}
+                </div>
+                <div>{result.text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Video Preview */}
       {videoId && showPreview && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">Preview</h2>
           <YouTubePlayer
             videoId={videoId}
-            startTime="00:00:00"
+            startTime={formatTime(currentTime)}
             endTime="00:00:00"
           />
         </div>

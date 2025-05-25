@@ -8,7 +8,7 @@ import { promisify } from "util"; // For fs.unlink
 const unlinkAsync = promisify(fs.unlink); // Promisify fs.unlink for async cleanup
 
 const app = express();
-const port = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -294,7 +294,76 @@ app.post("/api/clip", async (req, res) => {
   }
 });
 
+// Add transcript extraction endpoint
+app.post("/api/transcript", async (req, res) => {
+  const { url } = req.body;
+  
+  if (!url) {
+    return res.status(400).json({ error: "URL is required" });
+  }
+
+  try {
+    const transcript = await new Promise((resolve, reject) => {
+      const ytDlp = spawn("yt-dlp", [
+        url,
+        "--skip-download",
+        "--write-auto-sub",
+        "--sub-format",
+        "json3",
+        "--sub-lang",
+        "en",
+        "-o",
+        "temp_sub",
+      ]);
+
+      let transcriptData = "";
+      ytDlp.stdout.on("data", (data) => {
+        transcriptData += data.toString();
+      });
+
+      ytDlp.stderr.on("data", (data) => {
+        console.error(`yt-dlp stderr: ${data}`);
+      });
+
+      ytDlp.on("close", (code) => {
+        if (code === 0) {
+          try {
+            // Read the generated JSON file
+            const jsonPath = "temp_sub.en.json3";
+            const transcriptJson = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+            
+            // Extract events with text and timestamps
+            const events = transcriptJson.events
+              .filter((event: any) => event.segs && event.segs.length > 0)
+              .map((event: any) => ({
+                text: event.segs.map((seg: any) => seg.utf8).join(""),
+                start: event.tStartMs / 1000,
+                end: (event.tStartMs + event.dDurationMs) / 1000
+              }));
+
+            // Clean up the temporary file
+            fs.unlinkSync(jsonPath);
+            resolve(events);
+          } catch (err) {
+            reject(new Error(`Failed to parse transcript: ${err}`));
+          }
+        } else {
+          reject(new Error(`yt-dlp process exited with code ${code}`));
+        }
+      });
+    });
+
+    res.json({ transcript });
+  } catch (error) {
+    console.error("Error extracting transcript:", error);
+    res.status(500).json({
+      error: "Failed to extract transcript",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
 // Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

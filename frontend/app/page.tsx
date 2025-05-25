@@ -132,6 +132,8 @@ function YouTubeClipper() {
   const videoId = getVideoId(url);
 
   return (
+  
+
     <section className="flex flex-col w-full gap-12 border-2 border-border/50 p-4 md:p-6 bg-muted/30 rounded-3xl">
       <h1 className="text-2xl font-bold tracking-tight">YouTube Clipper</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -208,6 +210,7 @@ function YouTubeClipper() {
         </div>
       )}
     </section>
+    
   );
 }
 
@@ -226,8 +229,11 @@ export default function App() {
   ];
 
   return (
-    <main className="flex flex-col mx-auto max-w-lg w-full justify-center h-full items-center min-h-screen">
+    <main className="flex flex-col mx-auto max-w-lg w-full justify-center pt-12 h-full items-center min-h-screen">
+      <h1 className="text-2xl font-bold tracking-tight">Amaan's Youtube Helper</h1>
+    <div className="flex flex-col mx-auto max-w-lg w-full justify-center h-full items-center min-h-screen">
       <Navigation tabs={tabs} />
+    </div>
     </main>
   );
 }
