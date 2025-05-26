@@ -1,6 +1,7 @@
 # YouTube Clipper
 
-Credits:
+Credits: 
+<br/>
 Repository: [Youtube-Clipper](https://github.com/retrogtx/youtube-clipper)
 <br/>
 Contributors: 
