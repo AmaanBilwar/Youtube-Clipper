@@ -1,10 +1,10 @@
 # YouTube Clipper
 
-## Credits: 
+## Credits: <br/>
+Repository: [Youtube-Clipper](https://github.com/retrogtx/youtube-clipper)
 
 <br/>
-Repository: [Youtube-Clipper](https://github.com/retrogtx/youtube-clipper)
-<br/>
+
 Contributors: 
 - [retrogtx](https://github.com/retrogtx)
 - [keshav-exe](https://github.com/keshav-exe)
