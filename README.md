@@ -1,5 +1,13 @@
 # YouTube Clipper
 
+Credits:
+Repository: [Youtube-Clipper](https://github.com/retrogtx/youtube-clipper)
+Contributors: 
+- [retrogtx](https://github.com/retrogtx)
+- [keshav-exe](https://github.com/keshav-exe)
+- [Fardeen26](https://github.com/Fardeen26)
+
+
 A SaaS tool that allows users to extract specific clips from YouTube videos by providing a URL and start/end timestamps. Clips are processed efficiently and downloaded directly to your computer. Open source for folks who can't afford it and know how code works!
 
 ---
